@@ -16,7 +16,8 @@ const UserSchema = Schema({
         require: true
     },
     imagen:{
-        type: String
+        type: String,
+        default: 'default.png'
     },
     role:{
         type: String,

@@ -6,25 +6,30 @@ const { generarJWT } = require('../helpers/jwt');
 
 const getUsers = async(req, res) =>{
 
-    const desde = Number(req.query.desde) || 0;
+    const from = Number(req.query.from) || 0;
+    const limit = Number(req.query.limit) || 5;
+    const { email, name } = req.query;
 
-    //const usuarios = await Usuario.find({}, 'nombre email rol google');
-    // promesas simultaneas
-    const [ users, total ] = await Promise.all([
-        User
-            .find({}, 'nombre email google')
-            .skip( desde )
-            .limit( 5 ),
+    // Construir objeto de búsqueda
+    const query = {};
+    if (email && email !== '') {
+        query.email = { $regex: email, $options: 'i' }; // Búsqueda insensible a mayúsculas y minúsculas
+    }
+    if (name && name !== '') {
+        query.name = { $regex: name, $options: 'i' }; // Búsqueda insensible a mayúsculas y minúsculas
+    }
 
-            User.count()
-
+    // Promesas simultáneas
+    const [users, total] = await Promise.all([
+        User.find(query, 'name email google').skip(from).limit(limit),
+        User.countDocuments(query)
     ]);
-    
+
     res.json({
         ok: true,
         users: users,
         total: total
-    })
+    });
 }
 
 
