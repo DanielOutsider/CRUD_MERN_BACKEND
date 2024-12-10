@@ -2,11 +2,15 @@
 const express = require('express');
 const { dbConnection } = require('./database/config');
 const cors = require('cors')
+const http = require('http'); // Importa http para crear el servidor
+const socketIO = require('socket.io'); // Importa socket.io
 
 require('dotenv').config();
 
 //crea el servidor en express
 const app = express();
+const server = http.createServer(app); // Crea un servidor HTTP
+const io = socketIO(server); // Inicializa Socket.IO
 
 // configuramos CORS
 // USE = se usa para definir  un middleware
@@ -21,15 +25,24 @@ dbConnection();
 
 
 // rutas
-app.use( '/api/users', require('./routes/users.routes') );
+app.use( '/api/chat', require('./routes/chat.routes') );
+app.use('/api/chat-groups', require('./routes/chatGroup.routes'));
+app.use( '/api/manage/users', require('./routes/users.routes') );
 app.use( '/api/auth', require('./routes/auth.routes') );
 
-// app.get('/',(req, res) =>{
-//     res.json({
-//         ok: true,
-//         msg: 'hola mundo'
-//     })
-// });
+
+// Configura eventos de Socket.IO
+io.on('connection', (socket) => {
+    console.log('Nuevo usuario conectado');
+
+    socket.on('disconnect', () => {
+        console.log('Usuario desconectado');
+    });
+
+    socket.on('sendMessage', (data) => {
+        io.emit('newMessage', data); // Envía el mensaje a todos los clientes
+    });
+});
 
 
 // selecciono el puerto en el q va a correr

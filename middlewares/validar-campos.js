@@ -10,7 +10,7 @@ const validarCampos = (req, res = response, next ) => {
     if ( !errores.isEmpty() ){
 
         return res.status(400).json({
-            starus: 'validator',
+            status: 'validator',
             errors: errores.mapped()
         });
        
